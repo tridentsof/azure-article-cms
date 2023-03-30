@@ -132,6 +132,8 @@ def _build_msal_app(cache=None, authority=None):
     )
 
 def _build_auth_url(authority=None, scopes=None, state=None):
+    app.logger.info('Start function build_auth_url.')
+    app.logger.warning('Start function build_auth_url.')
     return _build_msal_app(authority=authority).get_authorization_request_url(
         scopes or [],
         state=state or str(uuid.uuid4()),
