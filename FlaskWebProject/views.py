@@ -19,7 +19,6 @@ imageSourceUrl = 'https://'+ app.config['BLOB_ACCOUNT']  + '.blob.core.windows.n
 @app.route('/home')
 @login_required
 def home():
-    app.logger.error('Direct to home page.')
     user = User.query.filter_by(username=current_user.username).first_or_404()
     posts = Post.query.all()
     return render_template(
@@ -31,7 +30,7 @@ def home():
 @app.route('/new_post', methods=['GET', 'POST'])
 @login_required
 def new_post():
-    app.logger.error('Start create new post.')
+    app.logger.warning('Start create new post.')
     form = PostForm(request.form)
     if form.validate_on_submit():
         post = Post()
@@ -63,7 +62,7 @@ def post(id):
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        app.logger.error('Login successfully!')
+        app.logger.warning('Login successfully!')
         return redirect(url_for('home'))
     form = LoginForm()
     if form.validate_on_submit():
@@ -84,6 +83,7 @@ def login():
 @app.route(Config.REDIRECT_PATH)  # Its absolute URL must match your app's redirect_uri set in AAD
 def authorized():
     if request.args.get('state') != session.get("state"):
+        app.logger.warning('Login successfully!')
         return redirect(url_for("home"))  # No-OP. Goes back to Index page
     if "error" in request.args:  # Authentication/Authorization failure
         return render_template("auth_error.html", result=request.args)
@@ -101,8 +101,8 @@ def authorized():
         # Here, we'll use the admin username for anyone who is authenticated by MS
         user = User.query.filter_by(username="admin").first()
         login_user(user)
-        app.logger.error('Login successfully!')
         _save_cache(cache)
+        app.logger.warning('Login successfully!')
     return redirect(url_for('home'))
 
 @app.route('/logout')
@@ -137,7 +137,6 @@ def _build_msal_app(cache=None, authority=None):
     )
 
 def _build_auth_url(authority=None, scopes=None, state=None):
-    app.logger.warning('Start function build_auth_url.')
     return _build_msal_app(authority=authority).get_authorization_request_url(
         scopes or [],
         state=state or str(uuid.uuid4()),
